@@ -10,7 +10,7 @@ services:
 
   devserver:
     image: circleci_dbc_ex:dev
-    command: yarn run dev:server
+    command: bundle exec bin/webpack-dev-server
     ports:
       - 3035:3035
     volumes:
