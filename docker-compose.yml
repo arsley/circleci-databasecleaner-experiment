@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:11-alpine
+    expose:
+      - 5432
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+
+  devserver:
+    image: circleci_dbc_ex:dev
+    command: yarn run dev:server
+    ports:
+      - 3035:3035
+    volumes:
+      - .:/home/app/web
+
+  web:
+    image: circleci_dbc_ex:dev
+    build:
+      context: .
+    stdin_open: true
+    tty: true
+    ports:
+      - 8080:80
+    volumes:
+      - .:/home/app/web
+      - bundle_gems:/usr/local/rvm/gems/ruby-2.6.3
+    links:
+      - postgres
+      - devserver
+
+volumes:
+  bundle_gems:
