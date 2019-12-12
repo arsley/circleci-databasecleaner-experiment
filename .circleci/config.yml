@@ -9,6 +9,9 @@ jobs:
           keys:
             - yarn-dep-{{ checksum "yarn.lock" }}
             - yarn-dep-
+
+      - restore_cache:
+          keys:
             - gems-dep-{{ checksum "Gemfile.lock" }}
             - gems-dep-
 
@@ -30,7 +33,6 @@ jobs:
             docker-compose run --rm web bundle install --path vendor/bundle -j4
             docker-compose run --rm -e RAILS_ENV=test web bundle exec rails db:create
             docker-compose run --rm -e RAILS_ENV=test web bundle exec rails db:migrate
-            docker-compose run --rm -e RAILS_ENV=test web bundle exec rails db:seed
 
       - save_cache:
           paths:
@@ -50,4 +52,6 @@ jobs:
 
       - run:
           name: Run tests
-          command: docker-compose run --rm -e RAILS_ENV=test web bundle exec rspec
+          command: |
+            docker-compose run --rm -e RAILS_ENV=test web bundle exec rails db:seed
+            docker-compose run --rm -e RAILS_ENV=test web bundle exec rspec
