@@ -32,21 +32,21 @@ jobs:
             docker-compose run --rm -e RAILS_ENV=test web bundle exec rails db:migrate
             docker-compose run --rm -e RAILS_ENV=test web bundle exec rails db:seed
 
+      - save_cache:
+          paths:
+            - vendor/bundle
+          key: gems-dep-{{ checksum "Gemfile.lock" }}
+
       - run:
           name: Create asset's manifest with dependency installation
           command: |
             docker-compose run --rm web yarn
-            docker-compose run --rm web yarn build
+            docker-compose run --rm web bundle exec rails webpacker:compile
 
       - save_cache:
           paths:
             - node_modules
           key: yarn-dep-{{ checksum "yarn.lock" }}
-
-      - save_cache:
-          paths:
-            - vendor/bundle
-          key: gems-dep-{{ checksum "Gemfile.lock" }}
 
       - run:
           name: Run tests
