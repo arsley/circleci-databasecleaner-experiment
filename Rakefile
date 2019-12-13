@@ -4,3 +4,8 @@
 require_relative 'config/application'
 
 Rails.application.load_tasks
+
+desc 'Show all Authors'
+task authors: [:environment] do
+  puts Author.all
+end
