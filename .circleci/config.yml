@@ -28,11 +28,16 @@ jobs:
             docker-compose build
 
       - run:
-          name: Setup test environment
+          name: Bundle install to vendor/bundle
+          command: docker-compose run --rm web bundle install --path vendor/bundle -j4
+
+      - run:
+          name: Create DB, apply migration and seeding data (with verbose option) then check log
           command: |
-            docker-compose run --rm web bundle install --path vendor/bundle -j4
-            docker-compose run --rm -e RAILS_ENV=test web bundle exec rails db:create
-            docker-compose run --rm -e RAILS_ENV=test web bundle exec rails db:migrate
+            docker-compose run --rm -e RAILS_ENV=test web bundle exec rails --verbose --trace=stdout db:create
+            docker-compose run --rm -e RAILS_ENV=test web bundle exec rails --verbose --trace=stdout db:migrate
+            docker-compose run --rm -e RAILS_ENV=test web bundle exec rails --verbose --trace=stdout db:seed
+            cat log/test.log
 
       - save_cache:
           paths:
@@ -52,6 +57,4 @@ jobs:
 
       - run:
           name: Run tests
-          command: |
-            docker-compose run --rm -e RAILS_ENV=test web bundle exec rails db:seed
-            docker-compose run --rm -e RAILS_ENV=test web bundle exec rspec
+          command: docker-compose run --rm -e RAILS_ENV=test web bundle exec rspec
